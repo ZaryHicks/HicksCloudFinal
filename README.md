@@ -4,8 +4,8 @@ Unfortunately, I was unable to get the Docker to GCP Communication aspect of the
 However, both the Docker UI Application and the Hadoop GCP Algorithms are fully completed.
 
 This document will show how to set up and run both sides of this application (although separate) on a new machine.
-Further down, you will see two different videos. The first will be a code walkthrough of both the UI application and
-the Hadoop Application. The second will be a demo of both applications running in their complete (but separate) states.
+Further down, you will see three different videos. The first will be a code walkthrough of both the UI application and
+the Hadoop Application. The second and third will be demos of both applications running in their complete (but separate) states.
 
 *** Steps to Get this Running
 
@@ -19,9 +19,13 @@ To begin, clone this repository to your desired location on your local machine.
 ** Docker UI Application
 
 Assumptions:
+
 You have Docker installed
+
 You have Xming installed (for the UI)
+
 You are on Windows
+
 
 At this point you should launch Docker Desktop / the Linux environment that Docker will run in.
 
@@ -60,14 +64,17 @@ If you followed the steps above correctly, the UI application should launch with
 ** GCP MapReduce Hadoop Application
 
 Assumptions:
+
 You have a GCP DataProc Cluster created and running
+
 All provided files for this project are pre-uploaded to the cluster (we will discuss where shortly)
+
 IF you want to compile the Jar from the source, you must have Eclipse installed
 
 The Hadoop Jars used to build this application are:
-	hadoop-mapreduce-client-core-2.6.0-cdh5.15.1.jar
-	hadoop-common-2.6.0-cdh5.15.1.jar
-	commons-logging-1.2.jar
+	hadoop-mapreduce-client-core-2.6.0-cdh5.15.1.jar, 
+	hadoop-common-2.6.0-cdh5.15.1.jar, 
+	commons-logging-1.2.jar, 
 	commons-cli-1.2.jar
 
 To see the application files for this part of the project, cd to HicksCloudFinal/GCPApp
@@ -81,8 +88,8 @@ In Project Properties -> Java Compiler, ensure "Use Compliance from execution en
 In Project Properties -> Java Build Path, select Libraries. Click "Add External Jars". Select the 4 jars mentioned above. Hit apply.
 Add HicksFinal.java into the project under src.
 Right click on the project, click Export. Select "Runnable Jar File". Ensure that the launch configuration is set for the correct project.
-	Note: if you do not see this new project under configuration, run the project first. It will crash but this is alright
-Click Finish to compile the Jar.
+	Note: if you do not see this new project under configuration, run the project first. It will crash but this is alright. 
+Once the you have the configuration set, click Finish to compile the Jar.
 
 This compiled Jar should be identical to the one provided - feel free to compile your own or use the provided Jar.
 
@@ -90,10 +97,10 @@ I will now discuss the formatting of HDFS that this application expects - namely
 
 On GCP, navigate to your Hadoop Cluster. Click on the SSH button next to the master node to launch an SSH session into the cluster via your browser.
 
-Everything pertaining to this application will be put in /user/hdfs/
-	HicksFinal.jar
-	input files folder
-	output folders
+Everything pertaining to this application will be put in /user/hdfs/.
+
+HicksFinal.jar / input files folder / output folders
+
 
 Create a directory called "files" in /user/hdfs:
 
@@ -108,27 +115,43 @@ Within files, create 3 folders, one for each tar of input files provided
 Note that these folder names are capitalized.
 Inside these folders, we will put the files from their respective tars.
 
-Note: Hugo and Tolstoy will contain 2 files each. Shakespeare will contain another set of directories reflective of how it is laid out in the tar files
+Note: Hugo and Tolstoy will contain 2 files each. Shakespeare will contain another set of directories reflective of how it is laid out in the tar files.
+
 These internal folders are: comedies, histories, poetry, tragedies. (The README and gloassary are excluded)
 They should be lowercase as shown here and as provided in the tar. Inside each of these folders will be the corresponsing works
 
 Here is the file structure for the input files (in files) as expected by the application:
 
 /user/hdfs/
+
 	/files/
+
 		/Hugo/
+
 			works
+
 		/Tolstoy/
+
 			works
+
 		/Shakespeare/
+
 			/comedies/
+
 				works
+
 			/histories/
+
 				works
+
 			/poetry/
+
 				works
+
 			/tragedies/
+
 				works
+
 
 With the input files correctly placed in hdfs, we can now run the application
 Click the Gear in the top right, select "Upload File" and upload HicksFinal.jar
@@ -145,25 +168,34 @@ I will now explain how to run the 3 different operations for this application. T
 	hadoop jar HicksFinal.jar HicksFinal -type [value]
 
 -type has 3 options:
+
 	-i Construct Inverted Indices
+
 	-t Term Search
+
 	-n Top-N
 
-Value corresponds to the type of operation we are performing
-	For -i, provide any combination of H T or S as a single command. This defines which of the 3 tar files we want to include in our input for the Inverted Indices
-		For example -i HS constructs Inverted Indices for the files from Hugo and Shakespeare, where just T will construct them only for Tolstoy
-		provide HTS in order to construct the indices for all provided input files
+
+Value corresponds to the type of operation we are performing:
 	
-	For -t provide any single string term/word that you want to search the Inverted Indices for
+For -i, provide any combination of H T or S as a single command. This defines which of the 3 tar files we want to include in our input for the Inverted Indices.
+For example: -i HS constructs Inverted Indices for the files from Hugo and Shakespeare, where just T will construct them only for Tolstoy.
+Provide HTS in order to construct the indices for all provided input files
 	
-	For -n provide the N value that you want to perform a Top-N word count search for from the Indices.
+For -t provide any single string term/word that you want to search the Inverted Indices for
+	
+For -n provide the N value that you want to perform a Top-N word count search for from the Indices.
 
 Since the -t and -n options RELY on the Inverted Indices being constructed, they will not work unless -i has been run once
 
-Each operation creates an output folder for its results
-	-i creates /user/hdfs/invertedind, which contains the Reducer outputs of the Inverted Indices
-	-t creates /user/hdfs/term/TERM. The subfolder /term will create a subfolder for the each TERM searched for, and contain the results there
-	-n creates /user/hdfs/topN/N. The subfolder /topN will create a subfolder for each N value that we call Top-N for, and contain the results there.
+Each operation creates an output folder for its results:
+
+-i creates /user/hdfs/invertedind, which contains the Reducer outputs of the Inverted Indices
+
+-t creates /user/hdfs/term/TERM. The subfolder /term will create a subfolder for the each TERM searched for, and contain the results there
+
+-n creates /user/hdfs/topN/N. The subfolder /topN will create a subfolder for each N value that we call Top-N for, and contain the results there.
+
 	
 In order to to see the results from these operations, we will use the cat command to print all of the output files for a given job:
 
@@ -181,7 +213,7 @@ This will construct Inverted Indices for all 3 tar inputs files and output them 
 
 	hadoop fs -cat /user/hdfs/invertedind/*
 	
-Will print out the Inverted Indices output of each Reducer
+Will print out the Inverted Indices that we constructed.
 
 Now we can search for a term. Enter the following:
 
@@ -212,6 +244,14 @@ communicate and thus are run separate at this time.
 
 This video is a walkthrough of the code for both sides of this project:
 
+https://pitt-my.sharepoint.com/:v:/g/personal/zsh5_pitt_edu/EXILh5ZEsfZOrmSx7frjaoQBEnvNCR934bK2Ofb13mbgMw?e=MhMcbU
 
-This video is a Demonstration of running both applications, showcasing the completeness of both:
+NOTE: Issues with the screen recording software prevented the UI application from being shown while I talk about it. This does not take away from the code walkthrough. To see the UI application function, watch the UI application demo video below.
 
+This video is a Demonstration of the UI Application:
+
+https://pitt-my.sharepoint.com/:v:/g/personal/zsh5_pitt_edu/EYT2itDdsnZGh3Mp3GQ1_OIBFWUxBejuZISOzIf9rLlWuA?e=h4y9UR
+
+This video is a Demonstration of the GCP Hadoop Application:
+
+https://pitt-my.sharepoint.com/:v:/g/personal/zsh5_pitt_edu/EYqV_SGNYXxBvc0Y9USsXXIBfBnGoijqnpLZQ_b0Hpo6Fw?e=JWFTmn
